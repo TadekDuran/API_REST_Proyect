@@ -25,9 +25,11 @@ public class MakerController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Maker must have a name.");
         }
         
-        makerService.save(Maker.builder()
+        Maker maker = Maker.builder()
                     .name(dto.getName())
-                    .build());
+                    .build();
+        
+        makerService.save(maker);
         
         return ResponseEntity.created(new URI("/maker/save")).build();
     }
@@ -35,22 +37,22 @@ public class MakerController {
     @GetMapping("/find/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id)  {
         
-            Optional<Maker> response = makerService.findById(id);
-            
-            if(response.isPresent())   {
-                
-                Maker maker = response.get();
-                
-                MakerDTO dto = MakerDTO.builder()
-                    .id(maker.getId())
-                    .name(maker.getName())
-                    .productList(maker.getProductList())
-                    .build();
-                
-                return ResponseEntity.ok(dto);
-            }
-            
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maker not found.");
+        Optional<Maker> response = makerService.findById(id);
+
+        if(response.isPresent())   {
+
+            Maker maker = response.get();
+
+            MakerDTO dto = MakerDTO.builder()
+                .id(maker.getId())
+                .name(maker.getName())
+                .productList(maker.getProductList())
+                .build();
+
+            return ResponseEntity.ok(dto);
+        }
+
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maker not found.");
     }
     
     @GetMapping("/findAll")
@@ -68,4 +70,29 @@ public class MakerController {
         return ResponseEntity.ok(makerList);
     }
     
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateMaker(@PathVariable Long id, @RequestBody MakerDTO makerDto) {
+        Optional<Maker> response = makerService.findById(id);
+        
+        if(!response.isPresent())   {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Maker maker = response.get();
+        maker.setName(makerDto.getName());
+        makerService.save(maker);
+        return ResponseEntity.ok("Maker updated.");
+    }
+    
+    @DeleteMapping("/delete/{id}")
+        public ResponseEntity<?> deleteMaker(@PathVariable Long id)  {
+            
+            if(id == null)  {
+                return ResponseEntity.badRequest().build();
+            }
+            
+            makerService.deleteById(id);
+            return ResponseEntity.ok("Maker eliminated.");
+            
+        }
 }
